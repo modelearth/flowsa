@@ -7,10 +7,11 @@ import pandas as pd
 import json
 import numpy as np
 from flowsa.common import *
+from flowsa.flowbyfunctions import assign_fips_location_system
 
 
 def CoA_Livestock_URL_helper(build_url, config, args):
-    """This helper function uses the "build_url" input from datapull.py, which is a base url for coa cropland data
+    """This helper function uses the "build_url" input from flowbyactivity.py, which is a base url for coa cropland data
     that requires parts of the url text string to be replaced with info specific to the usda nass quickstats API.
     This function does not parse the data, only modifies the urls from which data is obtained. """
     # initiate url list for coa cropland data
@@ -50,7 +51,7 @@ def coa_livestock_call(url, coa_response, args):
 def coa_livestock_parse(dataframe_list, args):
     """Modify the imported data so it meets the flowbyactivity criteria and only includes data on harvested acreage
     (irrigated and total)."""
-    df = pd.concat(dataframe_list, sort=True)
+    df = pd.concat(dataframe_list, sort=False)
     # # specify desired data based on domain_desc
     df = df[df['domain_desc'].str.contains("INVENTORY|TOTAL")]
     df = df[~df['domain_desc'].str.contains("ECONOMIC CLASS|NAICS|FARM SALES|AREA OPERATED")]
@@ -95,14 +96,7 @@ def coa_livestock_parse(dataframe_list, args):
     df.loc[df['Spread'] == "", 'Spread'] = None # for instances where data is missing
     df.loc[df['Spread'] == "(D)", 'Spread'] = withdrawn_keyword
     # add location system based on year of data
-    if args['year'] >= '2019':
-        df['LocationSystem'] = 'FIPS_2019'
-    elif '2015' <= args['year'] < '2019':
-        df['LocationSystem'] = 'FIPS_2015'
-    elif '2013' <= args['year'] < '2015':
-        df['LocationSystem'] = 'FIPS_2013'
-    elif '2010' <= args['year'] < '2013':
-        df['LocationSystem'] = 'FIPS_2010'
+    df = assign_fips_location_system(df, args['year'])
     # # Add hardcoded data
     df['Class'] = "Other"
     df['SourceName'] = "USDA_CoA_Livestock"

@@ -8,8 +8,9 @@ Pulls EIA CBECS water use data for large buildings from 2012
 import pandas as pd
 import io
 from flowsa.common import US_FIPS, withdrawn_keyword
+from flowsa.flowbyfunctions import assign_fips_location_system
 
-def eia_cbecs_call(url, response_load, args):
+def eia_cbecs_water_call(url, response_load, args):
     # Convert response to dataframe
     df_raw = pd.io.excel.read_excel(io.BytesIO(response_load.content), sheet_name='data').dropna()
     # skip rows and remove extra rows at end of dataframe
@@ -22,7 +23,7 @@ def eia_cbecs_call(url, response_load, args):
     return df
 
 
-def eia_cbecs_parse(dataframe_list, args):
+def eia_cbecs_water_parse(dataframe_list, args):
     # concat dataframes
     df = pd.concat(dataframe_list, sort=False).dropna()
     # drop columns
@@ -48,14 +49,7 @@ def eia_cbecs_parse(dataframe_list, args):
     df.loc[df['FlowName'] == 'Number of Buildings', 'Class'] = 'Other'
     df.loc[df['FlowName'] == "Total Floor Space", 'Class'] = 'Other'
     # add location system based on year of data
-    if args['year'] >= '2019':
-        df['LocationSystem'] = 'FIPS_2019'
-    elif '2015' <= args['year'] < '2019':
-        df['LocationSystem'] = 'FIPS_2015'
-    elif '2013' <= args['year'] < '2015':
-        df['LocationSystem'] = 'FIPS_2013'
-    elif '2010' <= args['year'] < '2013':
-        df['LocationSystem'] = 'FIPS_2010'
+    df = assign_fips_location_system(df, args['year'])
     # hardcode columns
     df["SourceName"] = 'EIA_CBECS_Water'
     df['Year'] = args["year"]

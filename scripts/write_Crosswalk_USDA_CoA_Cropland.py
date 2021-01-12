@@ -1,4 +1,4 @@
-# write_UDSA_ERS_FIWS_xwalk.py (scripts)
+# write_Crosswalk_UDSA_CoA_Cropland.py (scripts)
 # !/usr/bin/env python3
 # coding=utf-8
 # ingwersen.wesley@epa.gov
@@ -14,20 +14,9 @@ on NAICS definitions from the Census.
 
 """
 import pandas as pd
-from flowsa.common import datapath, fbaoutputpath
+from flowsa.common import datapath
+from scripts.common_scripts import unique_activity_names, order_crosswalk
 
-def unique_activity_names(datasource, years):
-    """read in the ers parquet files, select the unique activity names"""
-    df = []
-    for y in years:
-        df = pd.read_parquet(fbaoutputpath + datasource + "_" + str(y) + ".parquet", engine="pyarrow")
-        df.append(df)
-    df = df[['SourceName', 'ActivityConsumedBy']]
-    # rename columns
-    df = df.rename(columns={"SourceName": "ActivitySourceName",
-                            "ActivityConsumedBy": "Activity"})
-    df = df.drop_duplicates()
-    return df
 
 def assign_naics(df):
     """manually assign each ERS activity to a NAICS_2012 code"""
@@ -38,10 +27,10 @@ def assign_naics(df):
     df.loc[df['Activity'] == 'AG LAND', 'Sector'] = '11'
 
     # coa equivalent to crop production: 111
-    df.loc[df['Activity'] == 'AG LAND, CROPLAND', 'Sector'] = '111'
+    df.loc[df['Activity'] == 'AG LAND, CROPLAND, HARVESTED', 'Sector'] = '111'
 
     # coa equivalent to Animal Production and Aquaculture: 112
-    df.loc[df['Activity'] == 'AG LAND, PASTURELAND', 'Sector'] = '112'
+    df.loc[df['Activity'] == 'AG LAND, (EXCL HARVESTED CROPLAND)', 'Sector'] = '112'
 
     ## coa equivalent to soybean farming: 11111
     df.loc[df['Activity'] == 'SOYBEANS', 'Sector'] = '11111'
@@ -54,6 +43,7 @@ def assign_naics(df):
     df.loc[df['Activity'] == 'SAFFLOWER', 'Sector'] = '111120E'
     df.loc[df['Activity'] == 'SESAME', 'Sector'] = '111120F'
     df.loc[df['Activity'] == 'SUNFLOWER', 'Sector'] = '111120G'
+    df.loc[df['Activity'] == 'CAMELINA', 'Sector'] = '111120H'
 
     # coa aggregates to dry pea and bean farming: 11113
     df.loc[df['Activity'] == 'BEANS, DRY EDIBLE, (EXCL LIMA), INCL CHICKPEAS', 'Sector'] = '111130A'
@@ -68,7 +58,7 @@ def assign_naics(df):
 
     # coa equivalent to wheat farming: 11114
     df.loc[df['Activity'] == 'WHEAT', 'Sector'] = '11114'
-
+    
     # coa aggregates to corn farming: 11115
     df.loc[df['Activity'] == 'CORN', 'Sector'] = '11115'
     df.loc[df['Activity'] == 'CORN, GRAIN', 'Sector'] = '111150A'
@@ -89,25 +79,44 @@ def assign_naics(df):
     df.loc[df['Activity'] == 'SORGHUM, SYRUP', 'Sector'] = '111199H'
     df.loc[df['Activity'] == 'TRITICALE', 'Sector'] = '111199I'
     df.loc[df['Activity'] == 'WILD RICE', 'Sector'] = '111199J'
+    df.loc[df['Activity'] == 'EMMER & SPELT', 'Sector'] = '111199K'
     # df.loc[df['Activity'] == 'SWEET RICE', 'Sector'] = '' # last year published 2002
 
     # coa equivalent to vegetable and melon farming: 1112
     df.loc[df['Activity'] == 'VEGETABLE TOTALS', 'Sector'] = '1112'  # this category does include melons
+    df.loc[df['Activity'] == 'TARO', 'Sector'] = '111219'
 
     # coa aggregates to fruit and tree nut farming: 1113
     # in 2017, pineapples included in "orchards" category. Therefore, for 2012, must sum pineapple data to make
     # comparable
-    df.loc[df['Activity'] == 'ORCHARDS', 'Sector'] = '111300A'
-    df.loc[df['Activity'] == 'PINEAPPLES', 'Sector'] = '111300A1'
-    df.loc[df['Activity'] == 'BERRY TOTALS', 'Sector'] = '111300B'
+    # orchards associated with 6 naics6, for now, after allocation, divide values associated with these naics by 6
+    df.loc[df['Activity'] == 'ORCHARDS', 'Sector'] = '111331'
+    df = df.append(pd.DataFrame([['USDA_CoA_Cropland', 'ORCHARDS', 'NAICS_2012_Code', '111332']],
+                                columns=['ActivitySourceName', 'Activity', 'SectorSourceName', 'Sector']
+                                ), ignore_index=True, sort=True)
+    df = df.append(pd.DataFrame([['USDA_CoA_Cropland', 'ORCHARDS', 'NAICS_2012_Code', '111333']],
+                                columns=['ActivitySourceName', 'Activity', 'SectorSourceName', 'Sector']
+                                ), ignore_index=True, sort=True)
+    df = df.append(pd.DataFrame([['USDA_CoA_Cropland', 'ORCHARDS', 'NAICS_2012_Code', '111335']],
+                                columns=['ActivitySourceName', 'Activity', 'SectorSourceName', 'Sector']
+                                ), ignore_index=True, sort=True)
+    df = df.append(pd.DataFrame([['USDA_CoA_Cropland', 'ORCHARDS', 'NAICS_2012_Code', '111336']],
+                                columns=['ActivitySourceName', 'Activity', 'SectorSourceName', 'Sector']
+                                ), ignore_index=True, sort=True)
+    df = df.append(pd.DataFrame([['USDA_CoA_Cropland', 'ORCHARDS', 'NAICS_2012_Code', '111339']],
+                                columns=['ActivitySourceName', 'Activity', 'SectorSourceName', 'Sector']
+                                ), ignore_index=True, sort=True)
+    df.loc[df['Activity'] == 'BERRY TOTALS', 'Sector'] = '111334'
+    df.loc[df['Activity'] == 'PINEAPPLES', 'Sector'] = '111339'
 
     # coa aggregates to greenhouse nursery and floriculture production: 1114
     df.loc[df['Activity'] == 'HORTICULTURE TOTALS', 'Sector'] = '1114'
-    df.loc[df['Activity'] == 'CUT CHRISTMAS TREES', 'Sector'] = '111400A'
-    df.loc[df['Activity'] == 'SHORT TERM WOODY CROPS', 'Sector'] = '1114008'
+    df.loc[df['Activity'] == 'CUT CHRISTMAS TREES', 'Sector'] = '111421A'
+    df.loc[df['Activity'] == 'SHORT TERM WOODY CROPS', 'Sector'] = '111421B'
 
     # coa equivalent to other crop farming: 1119
-    df.loc[df['Activity'] == 'CROPS, OTHER', 'Sector'] = '1119'
+    # df.loc[df['Activity'] == 'CROPS, OTHER', 'Sector'] = '1119'
+    # df.loc[df['Activity'] == 'FIELD CROPS, OTHER', 'Sector'] = '1119'
 
     # coa equivalent to tobacco farming: 11191
     df.loc[df['Activity'] == 'TOBACCO', 'Sector'] = '11191'
@@ -131,7 +140,8 @@ def assign_naics(df):
     # df.loc[df['Activity'] == 'HAYLAGE, ALFALFA', 'Sector'] = '1119402B'
 
     # coa aggregates to all other crop farming: 11199
-    df.loc[df['Activity'] == 'SUGARBEETS', 'Sector'] = '111991'
+    df.loc[df['Activity'] == 'SUGARBEETS', 'Sector'] = '111991A'
+    df.loc[df['Activity'] == 'SUGARBEETS, SEED', 'Sector'] = '111991B'
     df.loc[df['Activity'] == 'PEANUTS', 'Sector'] = '111992'
     df.loc[df['Activity'] == 'DILL, OIL', 'Sector'] = '111998A'
     df.loc[df['Activity'] == 'GRASSES & LEGUMES TOTALS, SEED', 'Sector'] = '111998B'
@@ -140,7 +150,12 @@ def assign_naics(df):
     df.loc[df['Activity'] == 'HOPS', 'Sector'] = '111998E'
     df.loc[df['Activity'] == 'JOJOBA', 'Sector'] = '111998F'
     df.loc[df['Activity'] == 'MINT, OIL', 'Sector'] = '111998G'
+    # df.loc[df['Activity'] == 'MINT, PEPPERMINT, OIL', 'Sector'] = '111998G1'
+    # df.loc[df['Activity'] == 'MINT, SPEARMINT, OIL', 'Sector'] = '111998G2'
     df.loc[df['Activity'] == 'MISCANTHUS', 'Sector'] = '111998H'
+    df.loc[df['Activity'] == 'MINT, TEA LEAVES', 'Sector'] = '111998K'
+    df.loc[df['Activity'] == 'SWITCHGRASS', 'Sector'] = '111998L'
+    df.loc[df['Activity'] == 'FIELD CROPS, OTHER', 'Sector'] = '111998M'
 
     return df
 
@@ -148,17 +163,19 @@ def assign_naics(df):
 if __name__ == '__main__':
     # select years to pull unique activity names
     years = ['2012', '2017']
+    # flowclass
+    flowclass = ['Land', 'Other']
+    # datasource
+    datasource = 'USDA_CoA_Cropland'
     # df of unique ers activity names
-    df = unique_activity_names('USDA_CoA_Cropland', years)
+    df = unique_activity_names(flowclass, years, datasource)
     # add manual naics 2012 assignments
     df = assign_naics(df)
     # drop any rows where naics12 is 'nan' (because level of detail not needed or to prevent double counting)
-    df.dropna(subset=["Sector"], inplace=True)
+    df = df.dropna()
     # assign sector type
     df['SectorType'] = None
     # sort df
-    df = df.sort_values('Sector')
-    # reset index
-    df.reset_index(drop=True, inplace=True)
+    df = order_crosswalk(df)
     # save as csv
-    df.to_csv(datapath + "activitytosectormapping/" + "Crosswalk_USDA_CoA_Cropland_toNAICS.csv", index=False)
+    df.to_csv(datapath + "activitytosectormapping/" + "Crosswalk_" + datasource + "_toNAICS.csv", index=False)

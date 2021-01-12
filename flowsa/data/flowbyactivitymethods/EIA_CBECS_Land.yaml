@@ -1,0 +1,17 @@
+# Queries Commercial Buildings Energy Consumption Survey (CBECS) Land
+---
+# api_name: EIA_CBECS_Land
+# api_key_required: false
+format: xlsx
+url:
+  base_url: "https://www.eia.gov/consumption/commercial/data/2012/bc/xls/__xlsx__"
+  api_path: ""
+url_replace_fxn: eia_cbecs_land_URL_helper
+call_response_fxn: eia_cbecs_land_call
+parse_response_fxn: eia_cbecs_land_parse
+years:
+  - 2012
+xlsx:
+  - "b5.xlsx"
+  - "b12.xlsx"
+  - "b14.xlsx"

@@ -1,10 +1,10 @@
-# write_UDSA_ERS_FIWS_xwalk.py (scripts)
+# write_Crosswalk_USDA_CoA_Livestock.py (scripts)
 # !/usr/bin/env python3
 # coding=utf-8
 # ingwersen.wesley@epa.gov
 
 """
-Create a crosswalk linking the downloaded USDA_CoA_Cropland to NAICS_12. Created by selecting unique Activity Names and
+Create a crosswalk linking the downloaded USDA_CoA_Livestock to NAICS_12. Created by selecting unique Activity Names and
 manually assigning to NAICS
 
 NAICS8 are unofficial and are not used again after initial aggregation to NAICS6. NAICS8 are based
@@ -12,43 +12,23 @@ on NAICS definitions from the Census.
 
 7/8 digit NAICS align with USDA ERS FIWS
 """
-import pandas as pd
-from flowsa.common import datapath, fbaoutputpath
+from flowsa.common import datapath
+from scripts.common_scripts import unique_activity_names, order_crosswalk
 
-def unique_activity_names(datasource, years):
-    """read in the ers parquet files, select the unique activity names"""
-    df = []
-    for y in years:
-        df = pd.read_parquet(fbaoutputpath + datasource + "_" + str(y) + ".parquet", engine="pyarrow")
-        df.append(df)
-    df = df[['SourceName', 'ActivityProducedBy']]
-    # rename columns
-    df = df.rename(columns={"SourceName": "ActivitySourceName",
-                            "ActivityProducedBy": "Activity"})
-    df = df.drop_duplicates()
-    return df
 
 def assign_naics(df):
     """manually assign each ERS activity to a NAICS_2012 code"""
     # assign sector source name
     df['SectorSourceName'] = 'NAICS_2012_Code'
 
-    # cattle ranching and farming: 112100
+    # cattle ranching and farming: 1121
+    df.loc[df['Activity'] == 'CATTLE, INCL CALVES', 'Sector'] = '1121'
 
-    # beef cattle ranching and farming including feedlots: 11211
-    df.loc[df['Activity'] == 'BISON', 'Sector'] = '112110A'
-    df.loc[df['Activity'] == 'CATTLE, (EXCL COWS)', 'Sector'] = '112110B'
-    df.loc[df['Activity'] == 'CATTLE, COWS', 'Sector'] = '112110C'
-    df.loc[df['Activity'] == 'CATTLE, INCL CALVES', 'Sector'] = '112110D'
-
-    # beef cattle ranching and farming including feedlots: 112111
-    df.loc[df['Activity'] == 'CATTLE, COWS, BEEF', 'Sector'] = '112111'
-
-    # cattle feedlots: 112112
-    df.loc[df['Activity'] == 'CATTLE, ON FEED', 'Sector'] = '112112'
-
-    # dairy cattle and milk production: 11212
-    df.loc[df['Activity'] == 'CATTLE, COWS, MILK', 'Sector'] = '112120A'
+    # dual-purpose cattle ranching and farming: 11213
+    df.loc[df['Activity'] == 'CATTLE, (EXCL COWS)', 'Sector'] = '112130A'
+    df.loc[df['Activity'] == 'CATTLE, COWS', 'Sector'] = '112130B'
+    df.loc[df['Activity'] == 'CATTLE, COWS, BEEF', 'Sector'] = '112130B1'
+    df.loc[df['Activity'] == 'CATTLE, COWS, MILK', 'Sector'] = '112130B2'
 
     # hog and pig farming: 1122
     df.loc[df['Activity'] == 'HOGS', 'Sector'] = '1122'
@@ -127,9 +107,10 @@ def assign_naics(df):
 
     # all other animal production: 11299
     df.loc[df['Activity'] == 'ALPACAS', 'Sector'] = '112990A'
-    df.loc[df['Activity'] == 'DEER', 'Sector'] = '112990B'
-    df.loc[df['Activity'] == 'ELK', 'Sector'] = '112990C'
-    df.loc[df['Activity'] == 'LLAMAS', 'Sector'] = '112990D'
+    df.loc[df['Activity'] == 'BISON', 'Sector'] = '112990B'
+    df.loc[df['Activity'] == 'DEER', 'Sector'] = '112990C'
+    df.loc[df['Activity'] == 'ELK', 'Sector'] = '112990D'
+    df.loc[df['Activity'] == 'LLAMAS', 'Sector'] = '112990E'
 
     return df
 
@@ -137,8 +118,12 @@ def assign_naics(df):
 if __name__ == '__main__':
     # select years to pull unique activity names
     years = ['2012', '2017']
+    # flowclass
+    flowclass = ['Other']
+    # datasource
+    datasource = 'USDA_CoA_Livestock'
     # df of unique ers activity names
-    df = unique_activity_names('USDA_CoA_Livestock', years)
+    df = unique_activity_names(flowclass, years, datasource)
     # add manual naics 2012 assignments
     df = assign_naics(df)
     # drop any rows where naics12 is 'nan' (because level of detail not needed or to prevent double counting)
@@ -146,8 +131,6 @@ if __name__ == '__main__':
     # assign sector type
     df['SectorType'] = None
     # sort df
-    df = df.sort_values('Sector')
-    # reset index
-    df.reset_index(drop=True, inplace=True)
+    df = order_crosswalk(df)
     # save as csv
-    df.to_csv(datapath + "activitytosectormapping/" + "Crosswalk_USDA_CoA_Livestock_toNAICS.csv", index=False)
+    df.to_csv(datapath + "activitytosectormapping/" + "Crosswalk_" + datasource + "_toNAICS.csv", index=False)

@@ -12,7 +12,7 @@ class TestFlowByActivityFunctions(unittest.TestCase):
 
     def setUp(self):
         self.fbas = []
-        for f in os.listdir(fbaoutputpath):
+        for f in os.listdir(fbsoutputpath):
             print(f)
             fba = pd.read_parquet(f)
             self.fbas.append(fba)

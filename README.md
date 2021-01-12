@@ -18,11 +18,12 @@ _attribution_: The sectors through which activity uses, produces or receives the
 
 Class | Description | FlowBySector Reference Unit | [Flow Types](./formatspecs/FlowBySector.md) |
 --- | --- | --- | --- |
+Chemicals | Chemicals and groups of chemicals as defined in the [Federal Elementary Flow List](https://github.com/USEPA/Federal-LCA-Commons-Elementary-Flow-List) | kg | Modeled as ELEMENTARY_FLOWS produced by sectors |
 Employment | Jobs | p | Modeled as ELEMENTARY_FLOWS produced by sectors |
 Energy | Energy consumption, transfer as electricity or waste heat  | MJ | All types |
-Land | Land area occupied | m2 per year | Modeled as ELEMENTARY_FLOWS consumed by sectors |
+Land | Land area occupied | m2 | Modeled as ELEMENTARY_FLOWS consumed by sectors |
 Money | Purchases | USDyear* | Modeled as TECHNOSPHERE_FLOWS with producing and consuming sectors | 
-Water | Water use and release data, including wastewater | m3 | All types |
+Water | Water use and release data, including wastewater | kg | All types |
 Other | Misc flows used for supporting data | _varies_ | All types |
 
 *USD unit value varies by year and is reported like 'USD2012'
@@ -38,6 +39,10 @@ BLS_QCEW | [Bureau of Labor Statistics Quarterly Census of Employment and Wages]
 Census_CBP | [Census Bureau County Business Patterns](https://www.census.gov/programs-surveys/cbp.html) | Employment, Money, Other | County | Number of employees per industry, Annual payroll per industry, Number of establishments per industry |  |  |  |  | X |  |  |  |  |  |
 Census_PEP_Population | [Census Bureau Population Estimates](https://www.census.gov/programs-surveys/popest.html) | Other | County | Population | X | X | X | X | X | X | X | X | X | X | 
 EIA_CBECS_Water| [Energy Information Administration Commercial Buildings Energy Consumption Survey](https://www.eia.gov/consumption/commercial/reports/2012/water/) | Water | Country | Water consumption in large buildings |  |  | X |  |  |  |  |  |  |  | 
+EIA_MECS_Energy| [Energy Information Administration Manufacturing Energy Consumption Survey](https://www.eia.gov/consumption/manufacturing/) | Energy, Other | Region | Fuel and nonfuel consumption of energy flows by manufacturing industries | X |  |  |  | X |  |  |  |  |  | 
+EPA_NEI_Nonpoint |[Environmental Protection Agency National Emissions Inventory Nonpoint sources](https://www.epa.gov/air-emissions-inventories/national-emissions-inventory-nei) | Chemicals | County | Air emissions of criteria pollutants, criteria precursors, and hazardous air pollutants |  |  |  |  |  |  |  | X |  |  | 
+EPA_NEI_Nonroad |[Environmental Protection Agency National Emissions Inventory Nonroad sources](https://www.epa.gov/air-emissions-inventories/national-emissions-inventory-nei) | Chemicals | County | Air emissions of criteria pollutants, criteria precursors, and hazardous air pollutants |  |  |  |  |  |  |  | X |  |  |
+EPA_NEI_Onroad |[Environmental Protection Agency National Emissions Inventory Onroad sources](https://www.epa.gov/air-emissions-inventories/national-emissions-inventory-nei) | Chemicals | County |  Air emissions of criteria pollutants, criteria precursors, and hazardous air pollutants |  |  |  |  |  |  |  | X |  |  |
 NOAA_FisheryLandings | [National Oceanic and Atmospheric Administration Fisheries](https://foss.nmfs.noaa.gov/apexfoss/f?p=215:200) | Money | State | Fishery landings | X | X | X | X | X | X | X | X | X | X | 
 StatCan_IWS_MI | [Statistics Canada Industrial Water Survey](https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3810003701) | Water | Country | Water use by NAICS |  | X |  | X |  | X |  |  |  |  | 
 USDA_CoA_Cropland | [USDA Census of Agriculture](https://www.nass.usda.gov/Publications/AgCensus/2017/index.php#full_report) | Land, Other | County | Crop area by farm size and irrigation status | | | X | | | |  | X | | |
@@ -56,6 +61,22 @@ by topic (Cropland, Livestock, Product Market Value). As the FlowByActivity data
 parquets contain multiple class types, meaning the Class type should be specified when calling on the data. The
 USDA_CoA_Cropland dataframe includes acreage information for crops (Class = Land) and the number of farms that grow a
 particular crop (Class = Other). 
+
+## FlowBySector Datasets
+
+Environmental data attributed to North American Industrial Classification (NAICS) Codes, formatted into standard 
+FlowBySector datasets. 
+ 
+Description | Code | Years | Number of methods of sector allocation |
+--- | --- | --- | --- |
+Criteria and hazardous air emissions | CAP_HAP_national |  2017 | 1 |
+Employment | Employment_national | 2017 | 1 |
+Land use | Land_national |  2012 | 1 |
+Water withdrawal | Water_national |  2010, 2015 | 2 |
+Water withdrawal | Water_state |  2015 | 1 |
+Point source releases to water | TRI_DMR_national | 2017 | 1 |
+Commercial RCRA-defined hazardous waste | CRHW_national | 2017 | 1 |
+Point source industrial releases to ground | GRDREL_national | 2017 | 1 | 
 
 ## Disclaimer
 

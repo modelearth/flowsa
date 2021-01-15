@@ -80,10 +80,10 @@ def check_if_data_exists_at_geoscale(df, geoscale, activitynames='All'):
 
     if len(df) == 0:
         log.info(
-            "No flows found for " + ', '.join(activity_list) + " at the " + geoscale + " scale.")
+            "No flows found for " + ', '.join(activity_list) + " at the " + geoscale + " scale")
         exists = "No"
     else:
-        log.info("Flows found for " + ', '.join(activity_list) + " at the " + geoscale + " scale.")
+        log.info("Flows found for " + ', '.join(activity_list) + " at the " + geoscale + " scale")
         exists = "Yes"
 
     return exists
@@ -105,11 +105,11 @@ def check_if_data_exists_at_less_aggregated_geoscale(df, geoscale, activityname)
         fips = create_geoscale_list(df, 'state')
         df = df[df['Location'].isin(fips)]
         if len(df) == 0:
-            log.info("No flows found for " + activityname + "  at the state scale.")
+            log.info("No flows found for " + activityname + "  at the state scale")
             fips = create_geoscale_list(df, 'county')
             df = df[df['Location'].isin(fips)]
             if len(df) == 0:
-                log.info("No flows found for " + activityname + "  at the county scale.")
+                log.info("No flows found for " + activityname + "  at the county scale")
             else:
                 log.info("Flowbyactivity data exists for " + activityname + " at the county level")
                 new_geoscale_to_use = 'county'
@@ -124,7 +124,7 @@ def check_if_data_exists_at_less_aggregated_geoscale(df, geoscale, activityname)
         fips = create_geoscale_list(df, 'county')
         df = df[df['Location'].isin(fips)]
         if len(df) == 0:
-            log.info("No flows found for " + activityname + "  at the county scale.")
+            log.info("No flows found for " + activityname + "  at the county scale")
         else:
             log.info("Flowbyactivity data exists for " + activityname + " at the county level")
             new_geoscale_to_use = 'county'
@@ -392,11 +392,11 @@ def check_for_differences_between_fba_load_and_fbs_output(fba_load, fbs_load, ac
              ' combinations of flowable/context/sector length where the flowbyactivity to flowbysector ratio is > 1.01')
 
     # save csv to output folder
-    log.info('Save the comparision of FlowByActivity load to FlowBySector ratios for ' +
+    log.info('Save the comparison of FlowByActivity load to FlowBySector ratios for ' +
               activity_set + ' in output folder')
     # output data at all sector lengths
     df_merge.to_csv(outputpath + "FlowBySectorMethodAnalysis/" + method_name + '_' + source_name +
-                                "_FBA_load_to_FBS_comparision_" + activity_set + ".csv", index=False)
+                                "_FBA_load_to_FBS_comparison_" + activity_set + ".csv", index=False)
 
     return None
 
@@ -423,7 +423,7 @@ def compare_fba_load_and_fbs_output_totals(fba_load, fbs_load, activity_set, sou
     # extract relevant geoscale data or aggregate existing data
     fba = subset_df_by_geoscale(fba_load, attr['allocation_from_scale'], method['target_geoscale'])
     # map loaded fba
-    fba = map_elementary_flows(fba, mapping_files)
+    fba = map_elementary_flows(fba, mapping_files, keep_unmapped_rows=True)
     if src_info['sector-like_activities']:
         # if activities are sector-like, run sector aggregation and then subset df to only keep NAICS2
         fba = fba[['Class', 'FlowAmount', 'Unit', 'Context', 'ActivityProducedBy', 'ActivityConsumedBy', 'Location', 'LocationSystem']]
@@ -464,7 +464,7 @@ def compare_fba_load_and_fbs_output_totals(fba_load, fbs_load, activity_set, sou
         # list of contexts
         context_list = df_merge['Context'].to_list()
 
-        # loop through the contexts and print results of comparision
+        # loop through the contexts and print results of comparison
         for i in context_list:
             df_merge_subset = df_merge[df_merge['Context'] == i].reset_index(drop=True)
             diff_per = df_merge_subset['Percent_difference'][0]
@@ -483,11 +483,11 @@ def compare_fba_load_and_fbs_output_totals(fba_load, fbs_load, activity_set, sou
                          ' ' + i + ' is ' + str(abs(diff_per)) + '% more than the total FlowByActivity FlowAmount')
 
         # save csv to output folder
-        log.info('Save the comparision of FlowByActivity load to FlowBySector total FlowAmounts for ' +
+        log.info('Save the comparison of FlowByActivity load to FlowBySector total FlowAmounts for ' +
                   activity_set + ' in output folder')
         # output data at all sector lengths
         df_merge.to_csv(outputpath + "FlowBySectorMethodAnalysis/" + method_name + '_' + source_name +
-                                    "_FBA_total_to_FBS_total_FlowAmount_comparision_" + activity_set + ".csv", index=False)
+                        "_FBA_total_to_FBS_total_FlowAmount_comparison_" + activity_set + ".csv", index=False)
 
     except:
         log.info('Error occured when comparing total FlowAmounts for FlowByActivity and FlowBySector')

@@ -88,8 +88,14 @@ def load_source_dataframe(k, v):
     :return:
     """
     if v['data_format'] == 'FBA':
+        # if yaml specifies a geoscale to load, use parameter to filter dataframe
+        if 'source_fba_load_scale' in v:
+            geo_level = v['source_fba_load_scale']
+        else:
+            geo_level = 'all'
         log.info("Retrieving flowbyactivity for datasource " + k + " in year " + str(v['year']))
-        flows_df = flowsa.getFlowByActivity(flowclass=[v['class']], years=[v['year']], datasource=k)
+        flows_df = flowsa.getFlowByActivity(flowclass=[v['class']], years=[v['year']],
+                                            datasource=k, geographic_level=geo_level)
     elif v['data_format'] == 'FBS':
         log.info("Retrieving flowbysector for datasource " + k)
         flows_df = flowsa.getFlowBySector(k)
@@ -401,7 +407,7 @@ def main(method_name):
                 fbs_sector_subset = fbs_sector_subset.drop(['ActivityProducedBy', 'ActivityConsumedBy'],
                                                            axis=1, errors='ignore')
 
-                # save comparision of FBA total to FBS total for an activity set
+                # save comparison of FBA total to FBS total for an activity set
                 compare_fba_load_and_fbs_output_totals(flows_subset_geo, fbs_sector_subset, aset, k,
                                                        method_name, attr, method, mapping_files)
 

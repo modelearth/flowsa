@@ -14,7 +14,7 @@ setup(
         'pip>=9',
         'setuptools>=41',
         'pyyaml>=5.3',
-        'pyarrow==0.15',
+        'pyarrow>=0.15',
         'requests>=2.22.0',
         'appdirs>=1.4.3',
         'pycountry>=19.8.18',

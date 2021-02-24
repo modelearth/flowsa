@@ -82,6 +82,12 @@ Point source releases to water | TRI_DMR_national | 2017 | 1 |
 Commercial RCRA-defined hazardous waste | CRHW_national | 2017 | 1 |
 Point source industrial releases to ground | GRDREL_national | 2017 | 1 | 
 
+
+## Colabs
+
+The [first colab](https://colab.research.google.com/github/modelearth/flowsa/blob/master/colabs/County%20Industry%20Data.ipynb) is based on [model.earth](https://model.earth/localsite/info/data/)
+
+
 ## Disclaimer
 
 The United States Environmental Protection Agency (EPA) GitHub project code is provided on an "as is" basis
